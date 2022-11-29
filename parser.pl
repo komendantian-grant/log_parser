@@ -9,7 +9,6 @@ my $dbh = DatabaseConnector::get_dbi_connection();
 
 my $query = 'INSERT INTO message (id, int_id, str) VALUES (?, 1, "haha")';
 my $sth  = $dbh->prepare($query);
-#$sth->execute(112);
 
 my $clean_message_query = '
 	DELETE FROM message;
@@ -28,11 +27,6 @@ my $insert_query_message = 'INSERT INTO message (created, id, int_id, str, statu
 my $prepared_insert_query_message = $dbh->prepare($insert_query_message);
 my $insert_query_log = 'INSERT INTO log (created, int_id, str, address) VALUES (?, ?, ?, ?)';
 my $prepared_insert_query_log = $dbh->prepare($insert_query_log);
-#my @values = ('1', '2', '666', 'AAAAAAAAA', '<=>');
-#$prepared_insert_query->execute(@values);
-
-
-
 
 my $log_filename = "./out";
 
@@ -66,15 +60,6 @@ while(<LOGFILE>) {
 		($str_no_datetime) = $_ =~ /\S+\s\S+(.+)/;
 		$prepared_insert_query_log->execute($created_date . " " . $created_time, $internal_id, $str_no_datetime, ''	);
 	}
-=pod
-	print $created_date, "\n";
-	print $created_time, "\n";
-	print $data, "\n";
-	print $status, "\n";
-	print $misc, "\n";
-	print "Misc id: ", $int_id, "\n";
-=cut
-	#last if $line_counter == 40;
 }
 
 say $counter;
