@@ -35,14 +35,6 @@ sub handle_request {
     }
 }
 
-sub generate_html {
-	my ($query) = @_;
-	my $dbh = DatabaseConnector::get_dbi_connection();
-	my $prepared_query = $dbh->prepare($query);
-	$prepared_query->execute();
-	return generate_table($prepared_query);
-}
-
 # Generate html table out of retrieved html data
 sub generate_table {
 	my ($prepared_query) = @_;
@@ -106,17 +98,24 @@ sub address_form {
 # Generate result table html
 sub log_table {
 	my $cgi = shift;
-	return if !ref $cgi;	
+	return if !ref $cgi;
+	
+	# Gather log data with chosen addres from the database and generate a html table
+	my $address = $cgi->param('address');
+    my $log_table_query = "SELECT created AS \"Creation datetime\", str AS \"Log string\" FROM log WHERE address=? ORDER BY int_id, created;";
+    my $database_connection = DatabaseConnector::get_dbi_connection();
+	my $prepared_log_table_query = $database_connection->prepare($log_table_query);
+	$prepared_log_table_query->execute($address);
+	my $log_table_html = generate_table($prepared_log_table_query);
+	
+	# Output table page html
 	print $cgi->header;
 	print $cgi->start_html("Log table");
 	print "<center>";
     print $cgi->h1("Message log:");
-    my $address = $cgi->param('address');
-    print generate_html("SELECT created, str AS \"Log string\" FROM log WHERE address='$address' ORDER BY int_id, created;");
+	print $log_table_html;
     print "</center>"; 
     print $cgi->end_html;
-    
-	
 }
 
 my $LogServer = LogServer->new(8080);
