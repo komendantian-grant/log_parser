@@ -11,6 +11,7 @@ services:
     
   log_postgresql:
     image: "postgres:latest"
+    build: ./log_postgresql
     networks:
       - custom
     environment:
