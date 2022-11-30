@@ -99,20 +99,30 @@ sub address_form {
 sub log_table {
 	my $cgi = shift;
 	return if !ref $cgi;
-
-	# Gather log data with chosen addres from the database and generate a html table
+	
+	my $database_connection = DatabaseConnector::get_dbi_connection();
 	my $address = $cgi->param('address');
-    my $log_table_query = "SELECT created AS \"Creation datetime\", str AS \"Log string\" FROM log WHERE address=? ORDER BY int_id, created;";
-    my $database_connection = DatabaseConnector::get_dbi_connection();
+	
+	my $log_count_table_query = "SELECT COUNT(*) FROM log WHERE address=?;";
+	my $prepared_log_count_table_query = $database_connection->prepare($log_count_table_query);
+	$prepared_log_count_table_query->execute($address);
+	my $log_count = $prepared_log_count_table_query->fetchrow_array; 
+	
+	# Gather log data with chosen addres from the database and generate a html table
+    my $log_table_query = "SELECT created AS \"Creation datetime\", str AS \"Log string\" FROM log WHERE address=? ORDER BY int_id, created LIMIT 100;";
 	my $prepared_log_table_query = $database_connection->prepare($log_table_query);
 	$prepared_log_table_query->execute($address);
 	my $log_table_html = generate_table($prepared_log_table_query);
-
+	
+	
 	# Output table page html
 	print $cgi->header;
 	print $cgi->start_html("Log table");
 	print "<center>";
     print $cgi->h1("Message log:");
+    if ($log_count > 100) {
+    	print $cgi->h2("Warning! Number of log strings ($log_count) exceeds 100; output is truncated");
+    }
 	print $log_table_html;
     print "</center>"; 
     print $cgi->end_html;
