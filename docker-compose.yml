@@ -1,5 +1,14 @@
 version: "3.9"
 services:
+  log_server:
+    build: ./server
+    networks:
+      - custom
+    ports:
+      - '8080:8080'
+    links:
+      - log_postgresql
+    
   log_postgresql:
     image: "postgres:latest"
     networks:
