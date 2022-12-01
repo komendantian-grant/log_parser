@@ -28,7 +28,7 @@ my $prepared_insert_query_message = $dbh->prepare($insert_query_message);
 my $insert_query_log = 'INSERT INTO log (created, int_id, str, address) VALUES (?, ?, ?, ?)';
 my $prepared_insert_query_log = $dbh->prepare($insert_query_log);
 
-my $log_filename = "./out";
+my $log_filename = $ARGV[0];
 
 open(LOGFILE, "<", $log_filename);
 
@@ -45,7 +45,6 @@ while(<LOGFILE>) {
 	if ($flag eq '<=') {
 		$counter++;
 		($created_date, $created_time, $internal_id, $flag, $misc) = $_ =~ /(\S+)\s(\S+)\s(\S+)\s(\S+)\s(.+)/;
-		print ($created_date ." ". $created_time ." ". $internal_id ." ". $flag ." ". $misc . "\n");
 		($int_id) = $misc =~ /id=(\d+)/;
 		($str_no_datetime) = $_ =~ /\S+\s\S+(.+)/;
 		$int_id = '0' if (!defined($int_id));	
@@ -53,7 +52,6 @@ while(<LOGFILE>) {
 	} elsif ($flag eq '=>' or $flag eq '->' or $flag eq '**' or $flag eq '==') {
 		($created_date, $created_time, $internal_id, $flag, $address_receiver, $misc) = $_ =~ /(\S+)\s(\S+)\s(\S+)\s(\S+)\s(\S+)\s(.+)/;
 		($str_no_datetime) = $_ =~ /\S+\s\S+(.+)/;
-		print (" ---- " .  $created_date ." ". $created_time ." ". $internal_id ." ". $flag ." ". $misc . "\n");
 		$prepared_insert_query_log->execute($created_date . " " . $created_time, $internal_id, $str_no_datetime, $address_receiver);
 	} elsif ($flag eq 'Completed') {
 		($created_date, $created_time, $internal_id, $flag) = $_ =~ /(\S+)\s(\S+)\s(\S+)\s(\S+)/;
@@ -61,6 +59,4 @@ while(<LOGFILE>) {
 		$prepared_insert_query_log->execute($created_date . " " . $created_time, $internal_id, $str_no_datetime, ''	);
 	}
 }
-
-say $counter;
 
